@@ -1,0 +1,88 @@
+{
+  "name": "analog-wakatime",
+  "displayName": "Analog WakaTime",
+  "description": "Track your coding activity - time spent, lines written, keystrokes, and more. An alternative to WakaTime for tracking your programming productivity.",
+  "version": "0.0.8",
+  "publisher": "pablaofficeals",
+  "author": {
+    "name": "Analog WakaTime Team"
+  },
+  "license": "PROPRIETARY",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "activity",
+    "tracker",
+    "coding",
+    "statistics",
+    "analytics",
+    "time-tracking",
+    "productivity",
+    "metrics",
+    "lines-of-code",
+    "keystrokes"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Analog WakaTime",
+      "properties": {
+        "analogWakaTime.apiToken": {
+          "type": "string",
+          "default": "",
+          "description": "API token for authentication. Get your token from your user profile.",
+          "scope": "application"
+        },
+        "analogWakaTime.sendInterval": {
+          "type": "number",
+          "default": 60000,
+          "description": "Interval for sending statistics in milliseconds (default: 60000 = 60 seconds)",
+          "minimum": 10000,
+          "maximum": 3600000
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "analogWakaTime.setApiToken",
+        "title": "Set API Token",
+        "category": "Analog WakaTime"
+      },
+      {
+        "command": "analogWakaTime.showStats",
+        "title": "Show Statistics",
+        "category": "Analog WakaTime"
+      },
+      {
+        "command": "analogWakaTime.forceSync",
+        "title": "Force Sync Now",
+        "category": "Analog WakaTime"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "change-version": "version patch",
+    "package": "vsce package --allow-missing-repository --no-yarn",
+    "publish": "vsce publish --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.27",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^3.7.1",
+    "typescript": "^5.0.0",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {}
+}
