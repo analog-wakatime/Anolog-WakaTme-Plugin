@@ -19,7 +19,7 @@ const SYNC_INTERVAL_MS = 5 * 60 * 1000;
 const STATUS_UPDATE_INTERVAL_MS = 1000;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('[Analog WakaTime] Активация плагина...');
+    console.log('[Analog WakaTime] Starting plugin...');
     
     const config = vscode.workspace.getConfiguration('analogWakaTime');
     const backendUrl = 'https://testingmyproject.space'; 
@@ -35,23 +35,23 @@ export function activate(context: vscode.ExtensionContext) {
         apiClient.validateToken().then(isValid => {
             if (!isValid) {
                 vscode.window.showWarningMessage(
-                    'Analog WakaTime: API токен недействителен. Пожалуйста, обновите токен в настройках.',
-                    'Настроить токен'
+                    'Analog WakaTime: API token is invalid. Please update the token in the settings.',
+                    'Configure token'
                 ).then(selection => {
-                    if (selection === 'Настроить токен') {
+                    if (selection === 'Configure token') {
                         vscode.commands.executeCommand('analogWakaTime.setApiToken');
                     }
                 });
             } else {
-                console.log('[Analog WakaTime] Токен валиден');
+                console.log('[Analog WakaTime] Token is valid');
             }
         });
     } else {
         vscode.window.showInformationMessage(
-            'Analog WakaTime: Настройте API токен для синхронизации статистики',
-            'Настроить'
+            'Analog WakaTime: Configure API token for synchronization statistics',
+            'Configure'
         ).then(selection => {
-            if (selection === 'Настроить') {
+            if (selection === 'Configure') {
                 vscode.commands.executeCommand('analogWakaTime.setApiToken');
             }
         });
@@ -59,8 +59,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     const setApiTokenCommand = vscode.commands.registerCommand('analogWakaTime.setApiToken', async () => {
         const token = await vscode.window.showInputBox({
-            prompt: 'Введите API токен из вашего профиля на сайте',
-            placeHolder: 'Вставьте токен здесь...',
+            prompt: 'Enter API token from your profile on the website',
+            placeHolder: 'Paste token here...',
             password: true,
             ignoreFocusOut: true,
             value: apiToken || ''
@@ -75,13 +75,13 @@ export function activate(context: vscode.ExtensionContext) {
                     
                     const isValid = await apiClient.validateToken();
                     if (isValid) {
-                        vscode.window.showInformationMessage('✅ API токен успешно установлен и проверен!');
+                        vscode.window.showInformationMessage('✅ API token successfully installed and verified!');
                     } else {
-                        vscode.window.showWarningMessage('⚠️ API токен установлен, но не прошел проверку. Убедитесь, что токен правильный.');
+                        vscode.window.showWarningMessage('⚠️ API token installed, but failed verification. Please make sure the token is correct.');
                     }
                 }
             } catch (error) {
-                vscode.window.showErrorMessage(`❌ Ошибка при сохранении токена: ${error}`);
+                vscode.window.showErrorMessage(`❌ Error saving token: ${error}`);
             }
         }
     });
@@ -97,13 +97,13 @@ export function activate(context: vscode.ExtensionContext) {
         const unsynced = localDb?.getUnsyncedCount() || 0;
         
         let message = `⏱️ Analog WakaTime\n\n`;
-        message += `📊 Всего времени: ${hours} ч ${minutes} мин\n`;
-        message += `💻 Текущая сессия: ${Math.floor(sessionSeconds / 60)} мин\n`;
+        message += `📊 Total time: ${hours} h ${minutes} min\n`;
+        message += `💻 Current session: ${Math.floor(sessionSeconds / 60)} min\n`;
         
         if (unsynced > 0) {
-            message += `⏳ Ожидает синхронизации: ${unsynced} записей`;
+            message += `⏳ Waiting for synchronization: ${unsynced} records`;
         } else {
-            message += `✅ Всё синхронизировано`;
+            message += `✅ Everything synchronized`;
         }
         
         vscode.window.showInformationMessage(message);
@@ -114,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
         const currentToken = currentConfig.get<string>('apiToken', '');
         
         if (!currentToken) {
-            vscode.window.showWarningMessage('Сначала настройте API токен');
+            vscode.window.showWarningMessage('First configure API token');
             return;
         }
         
@@ -130,23 +130,23 @@ export function activate(context: vscode.ExtensionContext) {
 
         const unsyncedActivities = localDb.getUnsyncedActivities();
         if (unsyncedActivities.length === 0) {
-            vscode.window.showInformationMessage('✅ Нет данных для синхронизации');
+            vscode.window.showInformationMessage('✅ No data for synchronization');
             return;
         }
 
         try {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                title: 'Синхронизация...',
+                title: 'Synchronization...',
                 cancellable: false
             }, async () => {
                 await apiClient!.syncActivities(unsyncedActivities);
                 localDb!.markAsSynced(unsyncedActivities);
             });
             
-            vscode.window.showInformationMessage(`✅ Синхронизировано ${unsyncedActivities.length} записей`);
+            vscode.window.showInformationMessage(`✅ Synchronized ${unsyncedActivities.length} records`);
         } catch (error: any) {
-            vscode.window.showErrorMessage(`❌ Ошибка синхронизации: ${error.message || error}`);
+            vscode.window.showErrorMessage(`❌ Synchronization error: ${error.message || error}`);
         }
     });
 
@@ -158,7 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
             const hasActivity = stats.totalTimeSpent > 0 || stats.totalKeystrokes > 0;
             
             if (hasActivity) {
-                console.log(`[Analog WakaTime] Сохранение: ${Math.floor(stats.totalTimeSpent / 1000)} сек, ${stats.totalKeystrokes} нажатий`);
+                console.log(`[Analog WakaTime] Saving: ${Math.floor(stats.totalTimeSpent / 1000)} sec, ${stats.totalKeystrokes} keystrokes`);
                 localDb.saveActivity(stats);
                 activityTracker?.resetStats();
             }
@@ -186,18 +186,18 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         try {
-            console.log(`[Analog WakaTime] Синхронизация ${unsyncedActivities.length} записей...`);
+            console.log(`[Analog WakaTime] Synchronization ${unsyncedActivities.length} records...`);
             await apiClient.syncActivities(unsyncedActivities);
             localDb.markAsSynced(unsyncedActivities);
-            console.log(`[Analog WakaTime] Синхронизация завершена`);
+            console.log(`[Analog WakaTime] Synchronization completed`);
         } catch (error: any) {
-            console.error('[Analog WakaTime] Ошибка синхронизации:', error);
+            console.error('[Analog WakaTime] Synchronization error:', error);
         }
     }, SYNC_INTERVAL_MS);
 
     context.subscriptions.push({
         dispose: async () => {
-            console.log('[Analog WakaTime] Деактивация плагина...');
+            console.log('[Analog WakaTime] Deactivation of the plugin...');
             
             if (saveInterval) {
                 clearInterval(saveInterval);
@@ -224,12 +224,12 @@ export function activate(context: vscode.ExtensionContext) {
                 const unsyncedActivities = localDb.getUnsyncedActivities();
                 if (unsyncedActivities.length > 0) {
                     try {
-                        console.log(`[Analog WakaTime] Финальная синхронизация: ${unsyncedActivities.length} записей`);
+                        console.log(`[Analog WakaTime] Final synchronization: ${unsyncedActivities.length} records`);
                         await apiClient.syncActivities(unsyncedActivities);
                         localDb.markAsSynced(unsyncedActivities);
-                        console.log(`[Analog WakaTime] Финальная синхронизация завершена`);
+                        console.log(`[Analog WakaTime] Final synchronization completed`);
                     } catch (error: any) {
-                        console.error('[Analog WakaTime] Ошибка финальной синхронизации:', error);
+                        console.error('[Analog WakaTime] Final synchronization error:', error);
                     }
                 }
             }
@@ -253,11 +253,11 @@ export function activate(context: vscode.ExtensionContext) {
         localDb?.cleanupOldRecords();
     }, 24 * 60 * 60 * 1000);
     
-    console.log('[Analog WakaTime] Плагин активирован');
+    console.log('[Analog WakaTime] Plugin activated');
 }
 
 export function deactivate() {
-    console.log('[Analog WakaTime] Деактивация...');
+    console.log('[Analog WakaTime] Deactivation...');
     
     if (saveInterval) {
         clearInterval(saveInterval);
@@ -289,7 +289,7 @@ export function deactivate() {
                 apiClient.syncActivities(unsyncedActivities).then(() => {
                     localDb?.markAsSynced(unsyncedActivities);
                 }).catch((error) => {
-                    console.error('[Analog WakaTime] Ошибка финальной синхронизации:', error);
+                    console.error('[Analog WakaTime] Final synchronization error:', error);
                 });
             }
         }

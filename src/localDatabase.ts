@@ -32,7 +32,7 @@ export class LocalDatabase {
                 this.activities = [];
             }
         } catch (error) {
-            console.error('Ошибка загрузки локальной БД:', error);
+            console.error('Error loading local database:', error);
             this.activities = [];
         }
     }
@@ -45,7 +45,7 @@ export class LocalDatabase {
             }
             fs.writeFileSync(this.dbPath, JSON.stringify(this.activities, null, 2), 'utf8');
         } catch (error) {
-            console.error('Ошибка сохранения локальной БД:', error);
+            console.error('Error saving local database:', error);
         }
     }
 

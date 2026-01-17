@@ -78,7 +78,7 @@ export class ActivityTracker {
         const timeToAdd = Math.min(timeSinceLastTick, this.MAX_TIME_PER_TICK);
         
         if (this.intervalTimeAccumulated + timeToAdd > this.MAX_TIME_PER_SAVE_INTERVAL) {
-            console.log(`[Analog WakaTime] Достигнут лимит времени за интервал: ${this.intervalTimeAccumulated}ms`);
+            console.log(`[Analog WakaTime] Time limit reached for interval: ${this.intervalTimeAccumulated}ms`);
             return;
         }
         

@@ -54,16 +54,16 @@ export class StatusBar {
         const unsyncedCount = this.localDb.getUnsyncedCount();
         
         let tooltip = `⏱️ Analog WakaTime\n\n`;
-        tooltip += `📊 Всего: ${totalStr}\n`;
-        tooltip += `💻 Текущая сессия: ${sessionStr}\n`;
+        tooltip += `📊 Total: ${totalStr}\n`;
+        tooltip += `💻 Current session: ${sessionStr}\n`;
         
         if (unsyncedCount > 0) {
-            tooltip += `\n⏳ Ожидает синхронизации: ${unsyncedCount} записей`;
+            tooltip += `\n⏳ Waiting for synchronization: ${unsyncedCount} records`;
         } else {
-            tooltip += `\n✅ Всё синхронизировано`;
+            tooltip += `\n✅ Everything synchronized`;
         }
         
-        tooltip += `\n\nНажмите для подробной статистики`;
+        tooltip += `\n\nClick for detailed statistics`;
         
         return tooltip;
     }
@@ -74,12 +74,12 @@ export class StatusBar {
         const seconds = totalSeconds % 60;
         
         if (hours > 0) {
-            return `${hours} ч ${minutes} мин`;
+            return `${hours} h ${minutes} min`;
         }
         if (minutes > 0) {
-            return `${minutes} мин ${seconds} сек`;
+            return `${minutes} min ${seconds} sec`;
         }
-        return `${seconds} сек`;
+        return `${seconds} sec`;
     }
 
     public dispose(): void {

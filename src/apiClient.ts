@@ -72,13 +72,13 @@ export class ApiClient {
 
     public async sendActivity(stats: ActivityStats): Promise<void> {
         if (!this.apiToken) {
-            throw new Error('API токен не установлен. Пожалуйста, настройте токен в настройках плагина.');
+            throw new Error('API token is not set. Please configure the token in the plugin settings.');
         }
 
         const grouped = this.groupActivityByLanguageAndHour(stats);
         
         if (grouped.size === 0) {
-            console.log('Нет активности для отправки');
+            console.log('No activity to send');
             return;
         }
 
@@ -111,9 +111,9 @@ export class ApiClient {
 
         try {
             await Promise.all(requests);
-            console.log(`Статистика успешно отправлена на бэкенд (${requests.length} записей)`);
+            console.log(`Statistics successfully sent to the backend (${requests.length} records)`);
         } catch (error) {
-            console.error('Ошибка при отправке статистики:', error);
+            console.error('Error sending statistics:', error);
             throw error;
         }
     }
@@ -142,14 +142,14 @@ export class ApiClient {
 
             return response.status === 200 || response.status === 400;
         } catch (error) {
-            console.error('Ошибка проверки токена:', error);
+            console.error('Error checking token:', error);
             return false;
         }
     }
 
     public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number }>): Promise<void> {
         if (!this.apiToken) {
-            throw new Error('API токен не установлен');
+            throw new Error('API token is not set');
         }
 
         if (activities.length === 0) {
@@ -174,7 +174,7 @@ export class ApiClient {
         }
 
         const result = await response.json() as { saved?: number; grouped?: number; message?: string };
-        console.log(`Синхронизировано: ${result.saved || activities.length} активностей (группировано в ${result.grouped || 0} записей)`);
+        console.log(`Synchronized: ${result.saved || activities.length} activities (grouped into ${result.grouped || 0} records)`);
     }
 }
 
