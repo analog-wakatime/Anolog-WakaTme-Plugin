@@ -114,7 +114,7 @@ This extension contributes the following settings:
 
 ## License
 
-MIT License
+Apache License 2.0
 
 ## Changelog
 
@@ -132,5 +132,3 @@ MIT License
 - Language statistics
 - API token authentication
 - Automatic statistics sync
-
-
