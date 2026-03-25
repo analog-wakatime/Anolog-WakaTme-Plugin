@@ -9,7 +9,8 @@ A Visual Studio Code extension that tracks your coding activity - time spent, li
 - ⌨️ **Keystrokes** - Tracks your typing activity
 - 📊 **Language Statistics** - Groups activity by programming language
 - 🔄 **Auto Sync** - Automatically syncs your statistics
-- 🔐 **Secure** - Uses API token authentication
+- 🔐 **Secure** - Uses browser-based OAuth or API token authentication
+- 🌐 **Browser Login** - Easy login via GitHub or Google (Device Flow)
 - 🎯 **Smart Tracking** - Only tracks active coding time (ignores idle periods)
 
 ## Installation
@@ -26,8 +27,14 @@ code --install-extension pablaofficeals.analog-wakatime
 
 ## Quick Start
 
-1. **Get your API token** from your user profile on the website
-2. **Open VS Code Settings**:
+1. **Login via Browser (Recommended)**:
+   - Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
+   - Run: `Analog WakaTime: Login with Browser`
+   - Complete the authorization in your web browser
+   
+   *Or use the traditional method:*
+2. **Get your API token** from your user profile on the website
+3. **Open VS Code Settings**:
    - Press `Ctrl+,` (or `Cmd+,` on Mac) to open Settings
    - Search for "Analog WakaTime"
    - Paste your API token in the `Analog WakaTime: Api Token` field
@@ -36,7 +43,7 @@ code --install-extension pablaofficeals.analog-wakatime
    - Open Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
    - Run: `Analog WakaTime: Set API Token`
    - Paste your API token
-3. **Start coding!** The extension will automatically track your activity
+4. **Start coding!** The extension will automatically track your activity
 
 ## Configuration
 
@@ -82,7 +89,9 @@ This extension contributes the following settings:
 
 ## Commands
 
-- `Analog WakaTime: Set API Token` - Configure your API token
+- `Analog WakaTime: Login with Browser` - Authorize using GitHub or Google
+- `Analog WakaTime: Logout` - Clear current authentication
+- `Analog WakaTime: Set API Token` - Configure your API token manually
 
 ## Troubleshooting
 
@@ -109,7 +118,13 @@ MIT License
 
 ## Changelog
 
-### 0.0.8
+### 0.0.10
+- Added **OAuth Device Flow** (Login via Browser)
+- Added **Enhanced Telemetry** (theme, workspace info, extensions, etc.)
+- Improved synchronization stability
+- Fixed Redis-based session management
+
+### 0.0.10
 - Initial release
 - Time tracking
 - Lines of code counting

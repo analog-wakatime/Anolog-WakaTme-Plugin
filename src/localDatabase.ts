@@ -6,11 +6,11 @@ import { ActivityStats, FileActivity } from './activityTracker';
 interface StoredActivity {
     language: string;
     lines: number;
-    time: number; 
-    date: string; 
-    hour: number; 
-    synced: boolean; 
-    timestamp: number; 
+    time: number;
+    date: string;
+    hour: number;
+    synced: boolean;
+    timestamp: number;
 }
 
 export class LocalDatabase {
@@ -55,13 +55,13 @@ export class LocalDatabase {
         for (const [filePath, fileActivity] of Object.entries(stats.activeFiles)) {
             const language = fileActivity.language || 'unknown';
             const timeSpentSeconds = Math.floor(fileActivity.timeSpent / 1000);
-            
+
             if (timeSpentSeconds <= 0 && fileActivity.linesAdded === 0 && fileActivity.linesDeleted === 0) {
                 continue;
             }
 
             const netLines = fileActivity.linesAdded - fileActivity.linesDeleted;
-            
+
             const startTime = fileActivity.firstActive;
             const endTime = fileActivity.lastActive;
             const midTime = (startTime + endTime) / 2;
@@ -72,7 +72,7 @@ export class LocalDatabase {
             if (timeSpentSeconds > 0 || netLines !== 0) {
                 this.activities.push({
                     language,
-                    lines: Math.max(0, netLines), 
+                    lines: Math.max(0, netLines),
                     time: timeSpentSeconds,
                     date: dateStr,
                     hour,
@@ -91,7 +91,7 @@ export class LocalDatabase {
 
     public markAsSynced(activities: StoredActivity[]): void {
         const syncedTimestamps = new Set(activities.map(a => a.timestamp));
-        
+
         for (const activity of this.activities) {
             if (syncedTimestamps.has(activity.timestamp)) {
                 activity.synced = true;

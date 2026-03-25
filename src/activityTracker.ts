@@ -6,9 +6,9 @@ export interface FileActivity {
     keystrokes: number;
     linesAdded: number;
     linesDeleted: number;
-    timeSpent: number; 
-    firstActive: number; 
-    lastActive: number; 
+    timeSpent: number;
+    firstActive: number;
+    lastActive: number;
 }
 
 export interface ActivityStats {
@@ -28,12 +28,13 @@ export class ActivityTracker {
     private lastTickTime: number = Date.now();
     private isUserActive: boolean = false;
     private lastActivityTime: number = Date.now();
-    
+    private enabled: boolean = false;
+
     private readonly INACTIVITY_THRESHOLD = 120000;
     private readonly TIME_UPDATE_INTERVAL = 1000;
     private readonly MAX_TIME_PER_TICK = 2000;
     private readonly MAX_TIME_PER_SAVE_INTERVAL = 35000;
-    
+
     private disposables: vscode.Disposable[] = [];
     private intervalTimeAccumulated: number = 0;
 
@@ -48,40 +49,44 @@ export class ActivityTracker {
             this.tickTime();
         }, this.TIME_UPDATE_INTERVAL);
     }
-    
+
     private tickTime(): void {
+        if (!this.enabled) {
+            return;
+        }
+
         const now = Date.now();
         const timeSinceLastTick = now - this.lastTickTime;
         this.lastTickTime = now;
-        
+
         if (!vscode.window.state.focused) {
             this.isUserActive = false;
             return;
         }
-        
+
         if (!this.currentActiveFile) {
             this.isUserActive = false;
             return;
         }
-        
+
         const timeSinceLastActivity = now - this.lastActivityTime;
         if (timeSinceLastActivity > this.INACTIVITY_THRESHOLD) {
             this.isUserActive = false;
             return;
         }
-        
+
         const fileActivity = this.activeFiles.get(this.currentActiveFile);
         if (!fileActivity) {
             return;
         }
-        
+
         const timeToAdd = Math.min(timeSinceLastTick, this.MAX_TIME_PER_TICK);
-        
+
         if (this.intervalTimeAccumulated + timeToAdd > this.MAX_TIME_PER_SAVE_INTERVAL) {
             console.log(`[Analog WakaTime] Time limit reached for interval: ${this.intervalTimeAccumulated}ms`);
             return;
         }
-        
+
         fileActivity.timeSpent += timeToAdd;
         fileActivity.lastActive = now;
         this.intervalTimeAccumulated += timeToAdd;
@@ -190,7 +195,7 @@ export class ActivityTracker {
             const startLine = change.range.start.line;
             const endLine = change.range.end.line;
             const newText = change.text;
-            
+
             const deletedFullLines = endLine - startLine;
             if (deletedFullLines > 0) {
                 linesDeleted += deletedFullLines;
@@ -224,7 +229,7 @@ export class ActivityTracker {
         if (fileActivity) {
             fileActivity.lastActive = now;
         }
-        
+
         if (this.currentActiveFile === filePath) {
             this.currentActiveFile = null;
         }
@@ -241,14 +246,14 @@ export class ActivityTracker {
             this.trackFileOpen(document);
             fileActivity = this.activeFiles.get(filePath)!;
         }
-        
+
         fileActivity.lastActive = now;
         this.markActivity();
     }
 
     public getStats(): ActivityStats {
         const now = Date.now();
-        
+
         const activeFilesObj: { [filePath: string]: FileActivity } = {};
         let totalTimeSpent = 0;
 
@@ -268,7 +273,7 @@ export class ActivityTracker {
 
     public resetStats() {
         const now = Date.now();
-        
+
         for (const [filePath, activity] of this.activeFiles.entries()) {
             activity.timeSpent = 0;
             activity.keystrokes = 0;
@@ -277,11 +282,19 @@ export class ActivityTracker {
             activity.firstActive = now;
             activity.lastActive = now;
         }
-        
+
         this.sessionStart = now;
         this.totalKeystrokes = 0;
         this.intervalTimeAccumulated = 0;
         this.lastTickTime = now;
+    }
+
+    public setEnabled(enabled: boolean): void {
+        this.enabled = enabled;
+        if (enabled) {
+            this.lastTickTime = Date.now();
+            this.lastActivityTime = Date.now();
+        }
     }
 
     public getSessionTime(): number {

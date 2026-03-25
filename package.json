@@ -2,12 +2,20 @@
   "name": "analog-wakatime",
   "displayName": "Analog WakaTime",
   "description": "Track your coding activity - time spent, lines written, keystrokes, and more. An alternative to WakaTime for tracking your programming productivity.",
-  "version": "0.0.9",
+  "version": "1.0.6",
   "publisher": "pablaofficeals",
   "author": {
     "name": "Analog WakaTime Team"
   },
-  "license": "PROPRIETARY",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/analog-wakatime/Anolog-WakaTme-Plugin.git"
+  },
+  "homepage": "https://github.com/analog-wakatime/Anolog-WakaTme-Plugin",
+  "bugs": {
+    "url": "https://github.com/analog-wakatime/Anolog-WakaTme-Plugin/issues"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -43,9 +51,9 @@
         },
         "analogWakaTime.sendInterval": {
           "type": "number",
-          "default": 60000,
+          "default": 5000,
           "description": "Interval for sending statistics in milliseconds (default: 60000 = 60 seconds)",
-          "minimum": 10000,
+          "minimum": 1000,
           "maximum": 3600000
         }
       }
@@ -64,6 +72,16 @@
       {
         "command": "analogWakaTime.forceSync",
         "title": "Force Sync Now",
+        "category": "Analog WakaTime"
+      },
+      {
+        "command": "analogWakaTime.login",
+        "title": "Login with Browser",
+        "category": "Analog WakaTime"
+      },
+      {
+        "command": "analogWakaTime.logout",
+        "title": "Logout",
         "category": "Analog WakaTime"
       }
     ]

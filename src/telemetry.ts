@@ -47,21 +47,32 @@ export class Telemetry {
                 files_opened: vscode.workspace.textDocuments.length,
                 keystrokes_total: 0,
                 languages: this.getLanguages(),
-                has_token: hasToken
+                has_token: hasToken,
+
+                vscode_theme: vscode.window.activeColorTheme.kind,
+                workspace_folders: vscode.workspace.workspaceFolders?.length || 0,
+                active_extensions: vscode.extensions.all.filter(e => e.isActive).length,
+                machine_id: vscode.env.machineId,
+                session_id: vscode.env.sessionId,
+                is_new_app_install: vscode.env.isNewAppInstall,
+                ui_kind: vscode.env.uiKind,
+                remote_name: vscode.env.remoteName || 'local'
             };
 
-            const url = this.adminUrl.endsWith('/') 
-                ? `${this.adminUrl}admin/apis/telemetry/vscode/telemetrisss/my/telemetri`
-                : `${this.adminUrl}/admin/apis/telemetry/vscode/telemetrisss/my/telemetri`;
-            
+            const baseUrl = 'https://testingmyproject.space';
+            const url = `${baseUrl}/api/telemetry`;
+
             console.log('[Analog WakaTime Telemetry] Sending to:', url);
-            
+
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
                 body: JSON.stringify(data)
             });
-            
+
             if (!response.ok) {
                 console.log('[Analog WakaTime Telemetry] Error:', response.status, response.statusText);
             } else {
@@ -79,6 +90,8 @@ export class Telemetry {
             case 'win32': return `Windows ${release}`;
             case 'darwin': return `macOS ${release}`;
             case 'linux': return `Linux ${release}`;
+            case 'freebsd': return `FreeBSD ${release}`;
+            case 'openbsd': return `OpenBSD ${release}`;
             default: return platform;
         }
     }

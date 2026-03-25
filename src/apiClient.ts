@@ -70,6 +70,26 @@ export class ApiClient {
         return grouped;
     }
 
+    private async fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+            clearTimeout(id);
+        }
+    }
+
+    public async ping(timeoutMs: number = 3000): Promise<boolean> {
+        try {
+            const url = `${this.backendUrl}/`;
+            const response = await this.fetchWithTimeout(url, { method: 'GET' }, timeoutMs);
+            return response.ok;
+        } catch {
+            return false;
+        }
+    }
+
     public async sendActivity(stats: ActivityStats): Promise<void> {
         if (!this.apiToken) {
             throw new Error('API token is not set. Please configure the token in the plugin settings.');
@@ -94,11 +114,11 @@ export class ApiClient {
             for (const [dateStr, hourMap] of dateMap.entries()) {
                 for (const [hour, activity] of hourMap.entries()) {
                     requests.push(
-                        fetch(url, {
+                        this.fetchWithTimeout(url, {
                             method: 'POST',
                             headers,
                             body: JSON.stringify(activity)
-                        }).then(async (response) => {
+                        }, 8000).then(async (response) => {
                             if (!response.ok) {
                                 const errorText = await response.text();
                                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
