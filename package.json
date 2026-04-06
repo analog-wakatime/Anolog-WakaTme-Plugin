@@ -2,7 +2,8 @@
   "name": "analog-wakatime",
   "displayName": "Analog WakaTime",
   "description": "Track your coding activity - time spent, lines written, keystrokes, and more. An alternative to WakaTime for tracking your programming productivity.",
-  "version": "1.0.6",
+  "icon": "icon/pluginIcon.svg",
+  "version": "1.0.7",
   "publisher": "pablaofficeals",
   "author": {
     "name": "Analog WakaTime Team"
@@ -52,7 +53,7 @@
         "analogWakaTime.sendInterval": {
           "type": "number",
           "default": 5000,
-          "description": "Interval for sending statistics in milliseconds (default: 60000 = 60 seconds)",
+          "description": "Interval for sending statistics in milliseconds (default: 5000 = 5 seconds)",
           "minimum": 1000,
           "maximum": 3600000
         }
