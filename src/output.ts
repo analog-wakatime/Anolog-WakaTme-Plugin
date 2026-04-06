@@ -31,4 +31,3 @@ export const output = {
     output.line(`[error] ${message}`)
   },
 }
-

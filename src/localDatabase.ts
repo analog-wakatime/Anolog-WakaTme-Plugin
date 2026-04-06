@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ActivityStats, FileActivity } from './activityTracker';
+import { ActivityStats } from './activityTracker';
+import { resolveProjectContext } from './projectContext';
 
 interface StoredActivity {
     language: string;
@@ -9,6 +10,8 @@ interface StoredActivity {
     time: number;
     date: string;
     hour: number;
+    path?: string;
+    project_name?: string;
     synced: boolean;
     timestamp: number;
 }
@@ -68,6 +71,7 @@ export class LocalDatabase {
             const activityDate = new Date(midTime);
             const dateStr = activityDate.toISOString().split('T')[0];
             const hour = activityDate.getHours();
+            const projectContext = resolveProjectContext(filePath);
 
             if (timeSpentSeconds > 0 || netLines !== 0) {
                 this.activities.push({
@@ -76,6 +80,8 @@ export class LocalDatabase {
                     time: timeSpentSeconds,
                     date: dateStr,
                     hour,
+                    path: projectContext.path,
+                    project_name: projectContext.projectName,
                     synced: false,
                     timestamp: now
                 });
@@ -117,4 +123,3 @@ export class LocalDatabase {
         return this.activities.filter(a => !a.synced).length;
     }
 }
-

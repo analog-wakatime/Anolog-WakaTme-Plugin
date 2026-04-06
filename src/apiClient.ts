@@ -1,4 +1,5 @@
-import { ActivityStats, FileActivity } from './activityTracker';
+import { ActivityStats } from './activityTracker';
+import { resolveProjectContext } from './projectContext';
 
 interface ActivityRequest {
     language: string;
@@ -6,6 +7,8 @@ interface ActivityRequest {
     time: number; 
     date?: string; 
     hour?: number; 
+    path?: string;
+    project_name?: string;
 }
 
 export class ApiClient {
@@ -22,8 +25,8 @@ export class ApiClient {
         this.apiToken = apiToken;
     }
 
-    private groupActivityByLanguageAndHour(stats: ActivityStats): Map<string, Map<string, Map<number, ActivityRequest>>> {
-        const grouped = new Map<string, Map<string, Map<number, ActivityRequest>>>();
+    private groupActivityForUpload(stats: ActivityStats): ActivityRequest[] {
+        const grouped = new Map<string, ActivityRequest>();
 
         for (const [filePath, fileActivity] of Object.entries(stats.activeFiles)) {
             const language = fileActivity.language || 'unknown';
@@ -41,33 +44,33 @@ export class ApiClient {
             const activityDate = new Date(midTime);
             const dateStr = activityDate.toISOString().split('T')[0]; 
             const hour = activityDate.getHours();
+            const projectContext = resolveProjectContext(filePath);
+            const groupKey = [
+                language,
+                dateStr,
+                hour,
+                projectContext.path || '',
+                projectContext.projectName || ''
+            ].join('|');
 
-            if (!grouped.has(language)) {
-                grouped.set(language, new Map());
-            }
-
-            const dateMap = grouped.get(language)!;
-            if (!dateMap.has(dateStr)) {
-                dateMap.set(dateStr, new Map());
-            }
-
-            const hourMap = dateMap.get(dateStr)!;
-            if (!hourMap.has(hour)) {
-                hourMap.set(hour, {
+            if (!grouped.has(groupKey)) {
+                grouped.set(groupKey, {
                     language,
                     lines: 0,
                     time: 0,
                     date: dateStr,
-                    hour
+                    hour,
+                    path: projectContext.path,
+                    project_name: projectContext.projectName
                 });
             }
 
-            const activity = hourMap.get(hour)!;
+            const activity = grouped.get(groupKey)!;
             activity.lines += netLines;
             activity.time += timeSpentSeconds;
         }
 
-        return grouped;
+        return Array.from(grouped.values());
     }
 
     private async fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
@@ -95,9 +98,9 @@ export class ApiClient {
             throw new Error('API token is not set. Please configure the token in the plugin settings.');
         }
 
-        const grouped = this.groupActivityByLanguageAndHour(stats);
+        const grouped = this.groupActivityForUpload(stats);
         
-        if (grouped.size === 0) {
+        if (grouped.length === 0) {
             console.log('No activity to send');
             return;
         }
@@ -110,23 +113,19 @@ export class ApiClient {
 
         const requests: Promise<void>[] = [];
         
-        for (const [language, dateMap] of grouped.entries()) {
-            for (const [dateStr, hourMap] of dateMap.entries()) {
-                for (const [hour, activity] of hourMap.entries()) {
-                    requests.push(
-                        this.fetchWithTimeout(url, {
-                            method: 'POST',
-                            headers,
-                            body: JSON.stringify(activity)
-                        }, 8000).then(async (response) => {
-                            if (!response.ok) {
-                                const errorText = await response.text();
-                                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                            }
-                        })
-                    );
-                }
-            }
+        for (const activity of grouped) {
+            requests.push(
+                this.fetchWithTimeout(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(activity)
+                }, 8000).then(async (response) => {
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    }
+                })
+            );
         }
 
         try {
@@ -148,7 +147,9 @@ export class ApiClient {
             const testActivity = {
                 language: 'test',
                 lines: 0,
-                time: 0
+                time: 0,
+                path: '/test-project',
+                project_name: 'test-project'
             };
 
             const response = await fetch(url, {
@@ -167,7 +168,7 @@ export class ApiClient {
         }
     }
 
-    public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number }>): Promise<void> {
+    public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number; path?: string; project_name?: string }>): Promise<void> {
         if (!this.apiToken) {
             throw new Error('API token is not set');
         }
@@ -197,5 +198,3 @@ export class ApiClient {
         console.log(`Synchronized: ${result.saved || activities.length} activities (grouped into ${result.grouped || 0} records)`);
     }
 }
-
-
