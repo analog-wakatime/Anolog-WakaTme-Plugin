@@ -5,18 +5,38 @@ on:
     branches:
       - release
   workflow_dispatch:
+    inputs:
+      publish_marketplace:
+        description: "Publish to VS Code Marketplace (requires VSCE_PAT)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 20
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
+      - name: Setup Node.js (with npm cache)
+        if: ${{ hashFiles('package-lock.json') != '' }}
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Setup Node.js (without cache)
+        if: ${{ hashFiles('package-lock.json') == '' }}
         uses: actions/setup-node@v5
         with:
           node-version: 20
@@ -38,36 +58,31 @@ jobs:
       - name: Build VSIX package
         run: npm run package
 
-      - name: Read extension version
-        id: version
-        run: |
-          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
-
       - name: Detect VSIX filename
         id: vsix
         run: |
           VSIX_FILE=$(ls ./*.vsix | sed -n '1p')
           echo "file=${VSIX_FILE}" >> "$GITHUB_OUTPUT"
 
-      - name: Ensure release tag exists
+      - name: Resolve tag name
+        id: tag
         run: |
-          TAG_NAME="v${{ steps.version.outputs.version }}"
-          if git ls-remote --tags origin "refs/tags/${TAG_NAME}" | grep -q "${TAG_NAME}$"; then
-            echo "Tag ${TAG_NAME} already exists in remote."
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "name=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           else
-            git tag "${TAG_NAME}"
-            git push origin "${TAG_NAME}"
+            VERSION=$(node -p "require('./package.json').version")
+            echo "name=v${VERSION}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.tag.outputs.name }}
           files: ${{ steps.vsix.outputs.file }}
           generate_release_notes: true
 
       - name: Publish extension to VS Code Marketplace
-        if: ${{ secrets.VSCE_PAT != '' }}
+        if: ${{ secrets.VSCE_PAT != '' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish_marketplace)) }}
         run: npm run publish
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
