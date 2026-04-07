@@ -12,6 +12,7 @@ interface StoredActivity {
     hour: number;
     path?: string;
     project_name?: string;
+    ide_name?: string;
     synced: boolean;
     timestamp: number;
 }
@@ -24,6 +25,10 @@ export class LocalDatabase {
         const storageUri = context.globalStorageUri;
         this.dbPath = path.join(storageUri.fsPath, 'analog-wakatime-db.json');
         this.loadDatabase();
+    }
+
+    private getIdeName(): string {
+        return vscode.env.appName || 'Visual Studio Code';
     }
 
     private loadDatabase(): void {
@@ -82,6 +87,7 @@ export class LocalDatabase {
                     hour,
                     path: projectContext.path,
                     project_name: projectContext.projectName,
+                    ide_name: this.getIdeName(),
                     synced: false,
                     timestamp: now
                 });

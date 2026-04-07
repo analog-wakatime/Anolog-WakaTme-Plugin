@@ -3,7 +3,7 @@
   "displayName": "Analog WakaTime",
   "description": "Track your coding activity - time spent, lines written, keystrokes, and more. An alternative to WakaTime for tracking your programming productivity.",
   "icon": "icon/pluginIcon.png",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "publisher": "pablaofficeals",
   "author": {
     "name": "Analog WakaTime Team"

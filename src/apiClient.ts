@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { ActivityStats } from './activityTracker';
 import { resolveProjectContext } from './projectContext';
 
@@ -9,6 +10,7 @@ interface ActivityRequest {
     hour?: number; 
     path?: string;
     project_name?: string;
+    ide_name?: string;
 }
 
 export class ApiClient {
@@ -23,6 +25,17 @@ export class ApiClient {
     public updateConfig(backendUrl: string, apiToken: string) {
         this.backendUrl = backendUrl;
         this.apiToken = apiToken;
+    }
+
+    private getIdeName(): string {
+        return vscode.env.appName || 'Visual Studio Code';
+    }
+
+    private enrichActivityRequest(activity: ActivityRequest): ActivityRequest {
+        return {
+            ...activity,
+            ide_name: activity.ide_name || this.getIdeName()
+        };
     }
 
     private groupActivityForUpload(stats: ActivityStats): ActivityRequest[] {
@@ -114,11 +127,12 @@ export class ApiClient {
         const requests: Promise<void>[] = [];
         
         for (const activity of grouped) {
+            const payload = this.enrichActivityRequest(activity);
             requests.push(
                 this.fetchWithTimeout(url, {
                     method: 'POST',
                     headers,
-                    body: JSON.stringify(activity)
+                    body: JSON.stringify(payload)
                 }, 8000).then(async (response) => {
                     if (!response.ok) {
                         const errorText = await response.text();
@@ -149,7 +163,11 @@ export class ApiClient {
                 lines: 0,
                 time: 0,
                 path: '/test-project',
-                project_name: 'test-project'
+                project_name: 'test-project',
+                ide_name: this.getIdeName(),
+                plugin_version: '1.0.0',
+                date: new Date().toISOString().split('T')[0],
+                hour: new Date().getHours()
             };
 
             const response = await fetch(url, {
@@ -168,7 +186,7 @@ export class ApiClient {
         }
     }
 
-    public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number; path?: string; project_name?: string }>): Promise<void> {
+    public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number; path?: string; project_name?: string; ide_name?: string }>): Promise<void> {
         if (!this.apiToken) {
             throw new Error('API token is not set');
         }
@@ -186,7 +204,9 @@ export class ApiClient {
         const response = await fetch(url, {
             method: 'POST',
             headers,
-            body: JSON.stringify({ activities })
+            body: JSON.stringify({
+                activities: activities.map((activity) => this.enrichActivityRequest(activity))
+            })
         });
 
         if (!response.ok) {

@@ -1,4 +1,4 @@
-backend/activity.db
+backend/
 backend/backend
 backend/gin.log
 frontend/pnpm-lock.yaml
@@ -42,3 +42,4 @@ main/backend/logs/gin.log
 start.yaml
 *.idea/
 package-lock.json
+.codex
