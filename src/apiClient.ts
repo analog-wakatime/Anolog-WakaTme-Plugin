@@ -74,7 +74,8 @@ export class ApiClient {
                     date: dateStr,
                     hour,
                     path: projectContext.path,
-                    project_name: projectContext.projectName
+                    project_name: projectContext.projectName,
+                    ide_name: this.getIdeName()
                 });
             }
 
@@ -205,7 +206,10 @@ export class ApiClient {
             method: 'POST',
             headers,
             body: JSON.stringify({
-                activities: activities.map((activity) => this.enrichActivityRequest(activity))
+                activities: activities.map((activity) => ({
+                    ...activity,
+                    ide_name: activity.ide_name || this.getIdeName()
+                }))
             })
         });
 

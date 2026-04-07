@@ -98,7 +98,13 @@ export class LocalDatabase {
     }
 
     public getUnsyncedActivities(): StoredActivity[] {
-        return this.activities.filter(activity => !activity.synced);
+        const ideName = this.getIdeName();
+        return this.activities
+            .filter(activity => !activity.synced)
+            .map(activity => ({
+                ...activity,
+                ide_name: activity.ide_name || ideName
+            }));
     }
 
     public markAsSynced(activities: StoredActivity[]): void {
