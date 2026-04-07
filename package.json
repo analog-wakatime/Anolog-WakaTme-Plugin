@@ -91,6 +91,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "change-version": "version patch",
     "package": "vsce package --allow-missing-repository --no-yarn",
     "publish": "vsce publish --allow-missing-repository"
@@ -100,8 +102,8 @@
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.7.1",
     "typescript": "^5.0.0",
+    "vitest": "^4.1.3",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
-  },
-  "dependencies": {}
+  }
 }
