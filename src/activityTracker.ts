@@ -311,5 +311,5 @@ export class ActivityTracker {
         }
         this.disposables.forEach(d => d.dispose());
         this.disposables = [];
-    }
+    } 
 }
