@@ -28,16 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Node.js (with npm cache)
-        if: ${{ hashFiles('package-lock.json') != '' }}
-        uses: actions/setup-node@v5
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Setup Node.js (without cache)
-        if: ${{ hashFiles('package-lock.json') == '' }}
+      - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
@@ -68,16 +59,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup Node.js (with npm cache)
-        if: ${{ hashFiles('package-lock.json') != '' }}
-        uses: actions/setup-node@v5
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
-
-      - name: Setup Node.js (without cache)
-        if: ${{ hashFiles('package-lock.json') == '' }}
+      - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 20
