@@ -80,6 +80,12 @@ describe('ApiClient', () => {
         const [url, options] = fetchMock.mock.calls[0];
         expect(url).toBe('https://testingmyproject.space/api/activity');
         expect(options.headers.Authorization).toBe('Bearer token-123');
+        expect(JSON.parse(options.body)).toEqual(
+            expect.objectContaining({
+                ide_name: 'VS Code',
+                language: 'typescript'
+            })
+        );
     });
 
     it('syncs queued activities via /api/activity/sync', async () => {
@@ -101,5 +107,39 @@ describe('ApiClient', () => {
         const [url, options] = fetchMock.mock.calls[0];
         expect(url).toBe('https://testingmyproject.space/api/activity/sync');
         expect(options.headers.Authorization).toBe('Bearer token-123');
+        const body = JSON.parse(options.body);
+        expect(body.activities[0]).toEqual(
+            expect.objectContaining({
+                language: 'typescript',
+                ide_name: 'VS Code'
+            })
+        );
+    });
+
+    it('does not call API when all grouped activity has zero seconds', async () => {
+        const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new ApiClient('https://testingmyproject.space', 'token-123');
+        await client.sendActivity({
+            totalTimeSpent: 200,
+            totalKeystrokes: 1,
+            activeFiles: {
+                '/workspace/project/src/index.ts': {
+                    filePath: '/workspace/project/src/index.ts',
+                    language: 'typescript',
+                    linesAdded: 1,
+                    linesDeleted: 0,
+                    timeSpent: 200,
+                    keystrokes: 1,
+                    firstActive: Date.now() - 200,
+                    lastActive: Date.now()
+                }
+            },
+            sessionStart: Date.now() - 200,
+            sessionEnd: Date.now()
+        });
+
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 });

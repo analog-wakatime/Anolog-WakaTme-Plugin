@@ -16,13 +16,9 @@ permissions:
 
 jobs:
   quality:
-    name: Quality (Node ${{ matrix.node-version }})
+    name: Quality (Node 24)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [20, 22]
     concurrency:
       group: ci-quality-${{ github.ref }}
       cancel-in-progress: true
@@ -34,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24
 
       - name: Install dependencies
         run: |
@@ -54,7 +50,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: quality-metadata-node-${{ matrix.node-version }}-${{ github.run_number }}
+          name: quality-metadata-node-24-${{ github.run_number }}
           path: |
             package.json
             package-lock.json
@@ -76,7 +72,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install dependencies
         run: |
@@ -115,7 +111,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install dependencies
         run: |
