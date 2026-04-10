@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { ActivityStats } from './activityTracker';
 import { resolveProjectContext } from './projectContext';
 
@@ -11,6 +12,7 @@ interface ActivityRequest {
     path?: string;
     project_name?: string;
     ide_name?: string;
+    filename?: string;
 }
 
 export class ApiClient {
@@ -44,6 +46,7 @@ export class ApiClient {
         for (const [filePath, fileActivity] of Object.entries(stats.activeFiles)) {
             const language = fileActivity.language || 'unknown';
             const timeSpentSeconds = Math.floor(fileActivity.timeSpent / 1000);
+            const fileName = path.basename(filePath);
             
             if (timeSpentSeconds <= 0) {
                 continue; 
@@ -63,7 +66,8 @@ export class ApiClient {
                 dateStr,
                 hour,
                 projectContext.path || '',
-                projectContext.projectName || ''
+                projectContext.projectName || '',
+                fileName
             ].join('|');
 
             if (!grouped.has(groupKey)) {
@@ -75,7 +79,8 @@ export class ApiClient {
                     hour,
                     path: projectContext.path,
                     project_name: projectContext.projectName,
-                    ide_name: this.getIdeName()
+                    ide_name: this.getIdeName(),
+                    filename: fileName
                 });
             }
 
@@ -166,6 +171,7 @@ export class ApiClient {
                 path: '/test-project',
                 project_name: 'test-project',
                 ide_name: this.getIdeName(),
+                filename: 'test-file.ts',
                 plugin_version: '1.0.0',
                 date: new Date().toISOString().split('T')[0],
                 hour: new Date().getHours()
@@ -187,7 +193,7 @@ export class ApiClient {
         }
     }
 
-    public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number; path?: string; project_name?: string; ide_name?: string }>): Promise<void> {
+    public async syncActivities(activities: Array<{ language: string; lines: number; time: number; date: string; hour: number; path?: string; project_name?: string; ide_name?: string; filename?: string }>): Promise<void> {
         if (!this.apiToken) {
             throw new Error('API token is not set');
         }

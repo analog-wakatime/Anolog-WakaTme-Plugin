@@ -83,7 +83,8 @@ describe('ApiClient', () => {
         expect(JSON.parse(options.body)).toEqual(
             expect.objectContaining({
                 ide_name: 'VS Code',
-                language: 'typescript'
+                language: 'typescript',
+                filename: 'index.ts'
             })
         );
     });
@@ -101,7 +102,8 @@ describe('ApiClient', () => {
             lines: 1,
             time: 60,
             date: '2026-04-07',
-            hour: 12
+            hour: 12,
+            filename: 'index.ts'
         }]);
 
         const [url, options] = fetchMock.mock.calls[0];
@@ -111,9 +113,62 @@ describe('ApiClient', () => {
         expect(body.activities[0]).toEqual(
             expect.objectContaining({
                 language: 'typescript',
-                ide_name: 'VS Code'
+                ide_name: 'VS Code',
+                filename: 'index.ts'
             })
         );
+    });
+
+    it('keeps activities from different files as separate uploads', async () => {
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: true
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        getWorkspaceFolderMock.mockReturnValue({
+            uri: { fsPath: '/workspace/project' },
+            name: 'project'
+        });
+
+        const startTime = new Date('2026-04-07T10:00:00.000Z').getTime();
+        const endTime = new Date('2026-04-07T10:00:02.000Z').getTime();
+        const client = new ApiClient('https://testingmyproject.space', 'token-123');
+
+        await client.sendActivity({
+            totalTimeSpent: 4000,
+            totalKeystrokes: 6,
+            activeFiles: {
+                '/workspace/project/src/index.ts': {
+                    filePath: '/workspace/project/src/index.ts',
+                    language: 'typescript',
+                    linesAdded: 2,
+                    linesDeleted: 0,
+                    timeSpent: 2000,
+                    keystrokes: 3,
+                    firstActive: startTime,
+                    lastActive: endTime
+                },
+                '/workspace/project/src/app.ts': {
+                    filePath: '/workspace/project/src/app.ts',
+                    language: 'typescript',
+                    linesAdded: 2,
+                    linesDeleted: 0,
+                    timeSpent: 2000,
+                    keystrokes: 3,
+                    firstActive: startTime,
+                    lastActive: endTime
+                }
+            },
+            sessionStart: startTime,
+            sessionEnd: endTime
+        });
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+
+        const filenames = fetchMock.mock.calls
+            .map(([, options]) => JSON.parse(options.body).filename)
+            .sort();
+
+        expect(filenames).toEqual(['app.ts', 'index.ts']);
     });
 
     it('does not call API when all grouped activity has zero seconds', async () => {

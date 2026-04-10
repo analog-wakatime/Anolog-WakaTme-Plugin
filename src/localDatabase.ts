@@ -13,6 +13,7 @@ interface StoredActivity {
     path?: string;
     project_name?: string;
     ide_name?: string;
+    filename?: string;
     synced: boolean;
     timestamp: number;
 }
@@ -88,6 +89,7 @@ export class LocalDatabase {
                     path: projectContext.path,
                     project_name: projectContext.projectName,
                     ide_name: this.getIdeName(),
+                    filename: path.basename(filePath),
                     synced: false,
                     timestamp: now
                 });
