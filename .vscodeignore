@@ -6,5 +6,5 @@ tsconfig.json
 **/*.map
 **/*.ts
 PUBLISHING.md
-
-
+node_modules/**
+dist/**
